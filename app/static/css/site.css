@@ -1023,3 +1023,35 @@ button, input, select, textarea, a { -webkit-tap-highlight-color: transparent; }
     .product-description, .related-section { max-width: 1600px; }
     .site-header { padding-inline: max(var(--page-gutter), calc((100vw - 1600px) / 2)); }
 }
+
+/* Keep catalog cards and product imagery consistent across every listing. */
+.product-grid, .shop-results .product-grid, .related-section .product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-inline: auto;
+    max-width: 1400px;
+    width: 100%;
+}
+.product-grid .product-image {
+    aspect-ratio: 1 / 1;
+    box-sizing: border-box;
+    padding: .75rem;
+}
+.product-grid .product-image img { object-fit: contain; }
+
+@media (max-width: 1100px) {
+    .product-grid, .shop-results .product-grid, .related-section .product-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .product-grid, .shop-results .product-grid, .related-section .product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 374px) {
+    .product-grid, .shop-results .product-grid, .related-section .product-grid {
+        grid-template-columns: 1fr;
+    }
+}

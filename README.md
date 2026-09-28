@@ -55,8 +55,10 @@ Set `FLASK_ENV=production`, a strong `SECRET_KEY`, `DATABASE_URL`, and `UPI_ID`.
 ```powershell
 $env:FLASK_ENV="production"
 py -m flask --app run.py db upgrade
-waitress-serve --call run:app
+gunicorn run:app
 ```
+
+For Render, use `pip install -r requirements.txt` as the build command and `gunicorn run:app` as the start command. The `run` module exports the Flask application as `app`.
 
 Use HTTPS in production so secure cookies work correctly, and store uploaded images on managed object storage when the application grows beyond a single server.
 

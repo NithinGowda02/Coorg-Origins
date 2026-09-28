@@ -136,7 +136,7 @@ def _save_variants(product, form):
             db.session.add(variant)
 
 
-def _save_product_images(product, files):
+def _save_product_images(product, files, *, prepend=False):
     cloudinary_values = (
         current_app.config.get("CLOUDINARY_CLOUD_NAME"),
         current_app.config.get("CLOUDINARY_API_KEY"),
@@ -149,7 +149,7 @@ def _save_product_images(product, files):
     upload_folder = Path(current_app.config["UPLOAD_FOLDER"])
     if not use_cloudinary:
         upload_folder.mkdir(parents=True, exist_ok=True)
-    next_order = len(product.images)
+    valid_images = []
     for image_file in files or []:
         if not image_file or not image_file.filename:
             continue
@@ -164,6 +164,15 @@ def _save_product_images(product, files):
             image_file.stream.seek(0)
         except (UnidentifiedImageError, OSError):
             continue
+        valid_images.append((image_file, safe_name, extension))
+
+    if prepend and valid_images:
+        for existing_image in product.images:
+            existing_image.display_order += len(valid_images)
+            existing_image.is_primary = False
+
+    next_order = 0 if prepend else len(product.images)
+    for image_file, safe_name, extension in valid_images:
         filename = f"{uuid4().hex}{extension}"
         if use_cloudinary:
             import cloudinary
@@ -199,7 +208,7 @@ def _save_product_images(product, files):
                 image_url=image_url,
                 alt_text=product.name,
                 display_order=next_order,
-                is_primary=not product.images and next_order == 0,
+                is_primary=next_order == 0 and (prepend or not product.images),
             )
         )
         next_order += 1
@@ -242,6 +251,7 @@ def _configure_product_categories(form, selected_category_id=None):
     standard_categories = [
         ("Coorg Organic Spices", "coorg-organic-spices", ("coorg-organic-spices", "organic-spices", "coorg-spices", "spices")),
         ("Coorg Masala Powders", "coorg-masala-powders", ("coorg-masala-powders", "masala-powders", "masala")),
+        ("Coorg Coffee", "coorg-coffee", ("coorg-coffee", "coffee", "coffee-powder")),
         ("Sour & Tangy Fruits", "sour-tangy-fruits", ("sour-tangy-fruits", "sour-and-tangy-fruits")),
     ]
     added_standard_category = False
@@ -340,7 +350,7 @@ def edit_product(product_id):
             product.is_featured = form.is_featured.data
             _save_variants(product, form)
             try:
-                _save_product_images(product, form.images.data)
+                _save_product_images(product, form.images.data, prepend=True)
             except ImageStorageError as error:
                 db.session.rollback()
                 form.images.errors.append(str(error))

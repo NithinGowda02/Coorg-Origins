@@ -50,7 +50,15 @@
                 </div>
             </div>
 
-            <div class="form-field image-field">{{ form.images.label }}{{ form.images(accept="image/jpeg,image/png,image/webp", multiple=true) }}<small>Optional. JPG, PNG, or WebP files up to 5 MB each.</small>{% for error in form.images.errors %}<small>{{ error }}</small>{% endfor %}</div>
+            {% if product and product.images %}
+            <div class="existing-product-images" aria-label="Current product images">
+                <p class="form-help">Current images. The first image is shown in the storefront.</p>
+                <div class="existing-product-image-list">
+                    {% for image in product.images %}<figure><img src="{{ image.image_url }}" alt="{{ image.alt_text }}" loading="lazy"><figcaption>{{ "Storefront image" if loop.first else "Image " ~ loop.index }}</figcaption></figure>{% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            <div class="form-field image-field">{{ form.images.label }}{{ form.images(accept="image/jpeg,image/png,image/webp", multiple=true) }}<small>Optional. JPG, PNG, or WebP files up to 5 MB each. On edit, new uploads become the storefront image; existing images are kept.</small>{% for error in form.images.errors %}<small>{{ error }}</small>{% endfor %}</div>
             <div class="form-actions">{{ form.submit(class="button") }}<a href="{{ url_for('admin.products') }}">Cancel</a></div>
         </form>
     </section>

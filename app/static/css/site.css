@@ -298,6 +298,12 @@ a { color: inherit; }
 .variant-row .form-field input { font-size: 0.85rem; padding: 0.55rem; }
 .variant-row .checkbox-field { font-size: 0.7rem; margin: 1.55rem 0 0; white-space: nowrap; }
 .image-field { border-top: 1px solid var(--line); padding-top: 1.5rem; }
+.existing-product-images { margin: 1.5rem 0; }
+.existing-product-images .form-help { margin-bottom: .75rem; }
+.existing-product-image-list { display: flex; flex-wrap: wrap; gap: .75rem; }
+.existing-product-image-list figure { background: var(--cream); border: 1px solid var(--line); margin: 0; padding: .45rem; width: min(150px, 42vw); }
+.existing-product-image-list img { aspect-ratio: 1; display: block; object-fit: cover; width: 100%; }
+.existing-product-image-list figcaption { color: #716b60; font: .7rem Arial, sans-serif; padding-top: .4rem; }
 
 @media (max-width: 800px) {
     .admin-shell { grid-template-columns: 1fr; }

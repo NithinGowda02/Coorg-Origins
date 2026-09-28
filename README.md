@@ -1,4 +1,4 @@
-# Coorg Flavour
+# Coorg Origins
 
 A Flask e-commerce application for authentic products from Coorg (Kodagu), Karnataka.
 

@@ -1,6 +1,9 @@
 import logging
+import json
 import smtplib
 from email.message import EmailMessage
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
 from flask import current_app
 
@@ -16,8 +19,9 @@ def send_order_status_email(order):
     config = current_app.config
     mail_server = config.get("MAIL_SERVER")
     sender = config.get("MAIL_DEFAULT_SENDER")
-    if not mail_server or not sender:
-        logger.warning("Order status email skipped: configure MAIL_SERVER and MAIL_DEFAULT_SENDER.")
+    resend_api_key = config.get("RESEND_API_KEY")
+    if not sender or (not resend_api_key and not mail_server):
+        logger.warning("Order status email skipped: configure a mail provider and MAIL_DEFAULT_SENDER.")
         return False
 
     status = order.order_status.replace("_", " ").title()
@@ -66,14 +70,44 @@ def send_order_status_email(order):
     )
 
     try:
-        with smtplib.SMTP(mail_server, config["MAIL_PORT"], timeout=10) as smtp:
-            if config["MAIL_USE_TLS"]:
-                smtp.starttls()
-            username = config.get("MAIL_USERNAME")
-            password = config.get("MAIL_PASSWORD")
-            if username:
-                smtp.login(username, password or "")
-            smtp.send_message(message)
+        if resend_api_key:
+            payload = json.dumps(
+                {
+                    "from": sender,
+                    "to": [order.email],
+                    "subject": message["Subject"],
+                    "text": message.get_content(),
+                }
+            ).encode("utf-8")
+            request = Request(
+                "https://api.resend.com/emails",
+                data=payload,
+                headers={
+                    "Authorization": f"Bearer {resend_api_key}",
+                    "Content-Type": "application/json",
+                },
+                method="POST",
+            )
+            with urlopen(request, timeout=10) as response:
+                if not 200 <= response.status < 300:
+                    raise RuntimeError(f"Email API returned HTTP {response.status}.")
+        else:
+            with smtplib.SMTP(mail_server, config["MAIL_PORT"], timeout=10) as smtp:
+                if config["MAIL_USE_TLS"]:
+                    smtp.starttls()
+                username = config.get("MAIL_USERNAME")
+                password = config.get("MAIL_PASSWORD")
+                if username:
+                    smtp.login(username, password or "")
+                smtp.send_message(message)
+    except HTTPError as error:
+        logger.error(
+            "Email API rejected order status email for %s with HTTP %s: %s",
+            order.order_number,
+            error.code,
+            error.read().decode("utf-8", errors="replace")[:500],
+        )
+        return False
     except Exception:
         logger.exception("Could not send order status email for %s.", order.order_number)
         return False

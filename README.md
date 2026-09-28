@@ -90,7 +90,9 @@ UPI_ID=your-business@upi
 
 An administrator can upload or replace the customer-facing merchant QR from **Admin → Payment QR**. The image is stored under `app/static/uploads/payment/` and served on payment pages; if no image has been uploaded, the app continues generating a per-order QR from `UPI_ID`.
 
-Configure SMTP in `.env` to email customers when an order is placed or its status changes. `MAIL_DEFAULT_SENDER` should be an address accepted by your SMTP provider. Leave `MAIL_USERNAME` and `MAIL_PASSWORD` empty only if the server permits unauthenticated SMTP. If SMTP is not configured or sending fails, order changes still save and the failure is logged.
+Configure email delivery with either Resend or SMTP. Resend uses HTTPS and works on Render's free web service plan; verify a sender domain in Resend and create an API key. Set `RESEND_API_KEY` and `MAIL_DEFAULT_SENDER` (for example, `Coorg Origins <orders@your-verified-domain.com>`). When `RESEND_API_KEY` is set, the app uses Resend; otherwise it uses SMTP. Render free web services block outbound SMTP ports 25, 465, and 587, so use the API option there. If email is not configured or sending fails, order changes still save and the failure is logged.
+
+For local SMTP, set `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USE_TLS`, `MAIL_USERNAME`, `MAIL_PASSWORD`, and `MAIL_DEFAULT_SENDER` in `.env`.
 
 ```text
 MAIL_SERVER=smtp.example.com
@@ -99,6 +101,8 @@ MAIL_USE_TLS=true
 MAIL_USERNAME=your-smtp-username
 MAIL_PASSWORD=your-smtp-password
 MAIL_DEFAULT_SENDER=orders@example.com
+# Resend API key for Render free services:
+RESEND_API_KEY=re_your_api_key
 ```
 
 Database migration commands:

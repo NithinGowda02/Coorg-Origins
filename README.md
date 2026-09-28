@@ -50,7 +50,9 @@ py -m pytest
 
 ## Production run
 
-Set `FLASK_ENV=production`, a strong `SECRET_KEY`, `DATABASE_URL`, and `UPI_ID`. Apply migrations before starting the WSGI server:
+Set `FLASK_ENV=production`, a strong `SECRET_KEY`, `DATABASE_URL`, `UPI_ID`, and the three Cloudinary credentials (`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`). Product images are uploaded to Cloudinary in production so they survive deploys.
+
+The app converts both `postgres://` and Neon-style `postgresql://` URLs to the installed psycopg 3 driver. You can apply migrations from a machine whose `.env` contains the production `DATABASE_URL`:
 
 ```powershell
 $env:FLASK_ENV="production"
@@ -58,7 +60,7 @@ py -m flask --app run.py db upgrade
 gunicorn run:app
 ```
 
-For Render, use `pip install -r requirements.txt` as the build command and `gunicorn run:app` as the start command. The `run` module exports the Flask application as `app`.
+For Render, use `pip install -r requirements.txt` as the build command and `gunicorn run:app` as the start command. Set the environment variables above in the Render dashboard before starting the service.
 
 Use HTTPS in production so secure cookies work correctly, and store uploaded images on managed object storage when the application grows beyond a single server.
 

@@ -1,4 +1,5 @@
 import re
+from io import BytesIO
 from pathlib import Path
 from uuid import uuid4
 from datetime import datetime, timezone
@@ -136,8 +137,18 @@ def _save_variants(product, form):
 
 
 def _save_product_images(product, files):
+    cloudinary_values = (
+        current_app.config.get("CLOUDINARY_CLOUD_NAME"),
+        current_app.config.get("CLOUDINARY_API_KEY"),
+        current_app.config.get("CLOUDINARY_API_SECRET"),
+    )
+    use_cloudinary = all(cloudinary_values)
+    if any(cloudinary_values) and not use_cloudinary:
+        raise ImageStorageError("Cloudinary credentials are incomplete.")
+
     upload_folder = Path(current_app.config["UPLOAD_FOLDER"])
-    upload_folder.mkdir(parents=True, exist_ok=True)
+    if not use_cloudinary:
+        upload_folder.mkdir(parents=True, exist_ok=True)
     next_order = len(product.images)
     for image_file in files or []:
         if not image_file or not image_file.filename:
@@ -154,17 +165,48 @@ def _save_product_images(product, files):
         except (UnidentifiedImageError, OSError):
             continue
         filename = f"{uuid4().hex}{extension}"
-        image_file.save(upload_folder / filename)
+        if use_cloudinary:
+            import cloudinary
+            from cloudinary import uploader
+
+            cloudinary.config(
+                cloud_name=cloudinary_values[0],
+                api_key=cloudinary_values[1],
+                api_secret=cloudinary_values[2],
+                secure=True,
+            )
+            payload = BytesIO(image_file.stream.read())
+            payload.name = safe_name
+            try:
+                upload_result = uploader.upload(
+                    payload,
+                    folder="coorg-origins/products",
+                    resource_type="image",
+                    allowed_formats=["jpg", "jpeg", "png", "webp"],
+                )
+            except Exception as error:
+                current_app.logger.exception("Cloudinary product image upload failed.")
+                raise ImageStorageError("Image storage is temporarily unavailable. Please try again.") from error
+            image_url = upload_result.get("secure_url")
+            if not image_url:
+                raise ImageStorageError("Image storage did not return a secure image URL.")
+        else:
+            image_file.save(upload_folder / filename)
+            image_url = f"/static/uploads/products/{filename}"
         db.session.add(
             ProductImage(
                 product=product,
-                image_url=f"/static/uploads/products/{filename}",
+                image_url=image_url,
                 alt_text=product.name,
                 display_order=next_order,
                 is_primary=not product.images and next_order == 0,
             )
         )
         next_order += 1
+
+
+class ImageStorageError(Exception):
+    pass
 
 
 def _populate_product_form(form, product):
@@ -259,7 +301,13 @@ def new_product():
             db.session.add(product)
             db.session.flush()
             _save_variants(product, form)
-            _save_product_images(product, form.images.data)
+            try:
+                _save_product_images(product, form.images.data)
+            except ImageStorageError as error:
+                db.session.rollback()
+                form.images.errors.append(str(error))
+                flash("Product was not saved because image storage failed.", "error")
+                return render_template("admin/product_form.html", form=form, product=None)
             db.session.commit()
             flash("Product created.", "success")
             return redirect(url_for("admin.products"))
@@ -291,7 +339,14 @@ def edit_product(product_id):
             product.is_active = form.is_active.data
             product.is_featured = form.is_featured.data
             _save_variants(product, form)
-            _save_product_images(product, form.images.data)
+            try:
+                _save_product_images(product, form.images.data)
+            except ImageStorageError as error:
+                db.session.rollback()
+                form.images.errors.append(str(error))
+                flash("Product changes were not saved because image storage failed.", "error")
+                product = db.get_or_404(Product, product_id)
+                return render_template("admin/product_form.html", form=form, product=product)
             db.session.commit()
             flash("Product updated.", "success")
             return redirect(url_for("admin.products"))

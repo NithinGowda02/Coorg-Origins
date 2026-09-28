@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Payment QR | {{ brand_name }}{% endblock %}
+
+{% block content %}
+<div class="admin-shell">
+    <aside class="admin-sidebar" aria-label="Admin navigation">
+        <a class="admin-brand" href="{{ url_for('admin.dashboard') }}">{{ brand_name }}</a>
+        <p class="admin-label">Workspace</p>
+        <a class="admin-link" href="{{ url_for('admin.dashboard') }}">Overview</a>
+        <a class="admin-link" href="{{ url_for('admin.products') }}">Products</a>
+        <a class="admin-link" href="{{ url_for('admin.orders') }}">Orders</a>
+        <a class="admin-link admin-link-active" href="{{ url_for('admin.payment_qr_settings') }}">Payment QR</a>
+    </aside>
+
+    <section class="admin-content admin-form-content" aria-labelledby="payment-qr-title">
+        <p class="eyebrow">Payments</p>
+        <h1 id="payment-qr-title">Static QR reference</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}<p class="flash flash-{{ category }}" role="status">{{ message }}</p>{% endfor %}
+        {% endwith %}
+        <p class="form-help">This image is stored for admin reference only. Customer payments use an order-specific QR generated from the configured UPI ID, which includes the exact amount and order number. A static uploaded QR cannot encode a different amount for each order.</p>
+        {% if qr_image_url %}
+        <div class="admin-detail-block">
+            <p class="eyebrow">Uploaded reference image</p>
+            <img class="upi-qr" src="{{ qr_image_url }}" alt="Current customer payment QR code">
+        </div>
+        {% endif %}
+        <form class="admin-form" method="post" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="form-field image-field">
+                {{ form.image.label }}
+                {{ form.image(accept="image/png,image/jpeg,image/webp") }}
+                <small>PNG, JPG, or WebP. Use a clear, square QR image at least 64 × 64 pixels.</small>
+                {% for error in form.image.errors %}<small>{{ error }}</small>{% endfor %}
+            </div>
+            <div class="form-actions">
+                <button class="button" type="submit">Upload payment QR</button>
+                <a href="{{ url_for('admin.dashboard') }}">Cancel</a>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

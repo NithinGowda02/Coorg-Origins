@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block title %}Payment | {{ brand_name }}{% endblock %}
+
+{% block content %}
+<section class="payment-page" aria-labelledby="payment-title"><p class="eyebrow">Order {{ order.order_number }}</p><h1 id="payment-title">Complete payment.</h1><div class="payment-grid"><div class="upi-panel"><p>Scan this order-specific QR code; your UPI app should show the exact amount:</p><p>Amount due: <strong>Rs. {{ order.total_amount }}</strong></p><img class="upi-qr" src="{{ url_for('checkout.payment_qr', order_number=order.order_number) }}" alt="UPI payment QR code for {{ order.order_number }} including the exact amount Rs. {{ order.total_amount }}"><p class="payment-note">This payment is not verified automatically. Submit your transaction reference below; an administrator will review it.</p></div><form class="checkout-form" method="post">{{ form.hidden_tag() }}<div class="form-field">{{ form.transaction_reference.label }}{{ form.transaction_reference(placeholder="e.g. 1234567890") }}{% for error in form.transaction_reference.errors %}<small>{{ error }}</small>{% endfor %}</div>{{ form.submit(class="button") }}</form></div></section>
+{% endblock %}

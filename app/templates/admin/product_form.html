@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}{{ "Edit" if product else "Add" }} product | {{ brand_name }}{% endblock %}
+
+{% block content %}
+<div class="admin-shell">
+    <aside class="admin-sidebar" aria-label="Admin navigation">
+        <a class="admin-brand" href="{{ url_for('admin.dashboard') }}">{{ brand_name }}</a>
+        <p class="admin-label">Workspace</p>
+        <a class="admin-link" href="{{ url_for('admin.dashboard') }}">Overview</a>
+        <a class="admin-link admin-link-active" href="{{ url_for('admin.products') }}">Products</a>
+        <a class="admin-link" href="{{ url_for('admin.orders') }}">Orders</a>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="admin-logout">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit">Sign out</button>
+        </form>
+    </aside>
+
+    <section class="admin-content admin-form-content" aria-labelledby="product-form-title">
+        <p class="eyebrow">Catalog</p>
+        <h1 id="product-form-title">{{ "Edit" if product else "Add" }} product</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}<p class="flash flash-{{ category }}" role="status">{{ message }}</p>{% endfor %}
+        {% endwith %}
+        <form class="admin-form product-form" method="post" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="form-grid">
+                <div class="form-field form-field-wide">{{ form.name.label }}{{ form.name(autofocus=true) }}{% for error in form.name.errors %}<small>{{ error }}</small>{% endfor %}</div>
+                <div class="form-field form-field-wide">{{ form.category_id.label }}{{ form.category_id() }}{% for error in form.category_id.errors %}<small>{{ error }}</small>{% endfor %}<small>Products in this category appear together in the shop and category search.</small></div>
+                <div class="form-field form-field-wide">{{ form.short_description.label }}{{ form.short_description() }}{% for error in form.short_description.errors %}<small>{{ error }}</small>{% endfor %}</div>
+                <div class="form-field form-field-wide">{{ form.description.label }}{{ form.description(rows=5) }}{% for error in form.description.errors %}<small>{{ error }}</small>{% endfor %}</div>
+            </div>
+            <div class="checkbox-row"><label class="checkbox-field">{% if product %}{{ form.is_active() }}{% else %}{{ form.is_active(checked=true) }}{% endif %} Visible in store</label><label class="checkbox-field">{{ form.is_featured() }} {{ form.is_featured.label.text }}</label></div>
+
+            <div class="variant-section">
+                <div class="section-heading"><div><p class="eyebrow">Inventory</p><h2>Variants and pricing</h2></div><button class="button button-secondary" type="button" id="add-variant">Add variant</button></div>
+                <p class="form-help">Add a size, price, and stock quantity. Slugs and inventory codes are generated automatically.</p>
+                <div id="variant-list">
+                    {% for variant in form.variants %}
+                    <div class="variant-row">
+                        {{ variant.form["id"]() }}
+                        <div class="form-field">{{ variant.form.label.label }}{{ variant.form.label(placeholder="250g") }}{% for error in variant.form.label.errors %}<small>{{ error }}</small>{% endfor %}</div>
+                        <div class="form-field">{{ variant.quantity_value.label }}{{ variant.quantity_value(step="0.001", min="0") }}{% for error in variant.quantity_value.errors %}<small>{{ error }}</small>{% endfor %}</div>
+                        <div class="form-field">{{ variant.quantity_unit.label }}{{ variant.quantity_unit(placeholder="g") }}{% for error in variant.quantity_unit.errors %}<small>{{ error }}</small>{% endfor %}</div>
+                        <div class="form-field">{{ variant.price.label }}{{ variant.price(step="0.01", min="0") }}{% for error in variant.price.errors %}<small>{{ error }}</small>{% endfor %}</div>
+                        <div class="form-field">{{ variant.stock_quantity.label }}{{ variant.stock_quantity(min="0") }}{% for error in variant.stock_quantity.errors %}<small>{{ error }}</small>{% endfor %}</div>
+                        <label class="checkbox-field">{{ variant.is_active() }} Active</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-field image-field">{{ form.images.label }}{{ form.images(accept="image/jpeg,image/png,image/webp", multiple=true) }}<small>Optional. JPG, PNG, or WebP files up to 5 MB each.</small>{% for error in form.images.errors %}<small>{{ error }}</small>{% endfor %}</div>
+            <div class="form-actions">{{ form.submit(class="button") }}<a href="{{ url_for('admin.products') }}">Cancel</a></div>
+        </form>
+    </section>
+</div>
+
+<template id="variant-template">
+    <div class="variant-row">
+        <input id="variants-__prefix__-id" name="variants-__prefix__-id" type="hidden" value="">
+        <div class="form-field"><label for="variants-__prefix__-label">Display label</label><input id="variants-__prefix__-label" name="variants-__prefix__-label" placeholder="250g" required></div>
+        <div class="form-field"><label for="variants-__prefix__-quantity_value">Quantity</label><input id="variants-__prefix__-quantity_value" name="variants-__prefix__-quantity_value" min="0" step="0.001" required type="number"></div>
+        <div class="form-field"><label for="variants-__prefix__-quantity_unit">Unit</label><input id="variants-__prefix__-quantity_unit" name="variants-__prefix__-quantity_unit" placeholder="g" required></div>
+        <div class="form-field"><label for="variants-__prefix__-price">Price</label><input id="variants-__prefix__-price" name="variants-__prefix__-price" min="0" step="0.01" required type="number"></div>
+        <div class="form-field"><label for="variants-__prefix__-stock_quantity">Stock</label><input id="variants-__prefix__-stock_quantity" name="variants-__prefix__-stock_quantity" min="0" required type="number"></div>
+        <label class="checkbox-field"><input checked id="variants-__prefix__-is_active" name="variants-__prefix__-is_active" type="checkbox" value="y"> Active</label>
+    </div>
+</template>
+<script>
+    const addVariant = document.querySelector('#add-variant');
+    const variantList = document.querySelector('#variant-list');
+    const variantTemplate = document.querySelector('#variant-template');
+    addVariant.addEventListener('click', () => {
+        const index = variantList.querySelectorAll('.variant-row').length;
+        variantList.insertAdjacentHTML('beforeend', variantTemplate.innerHTML.replaceAll('__prefix__', index));
+    });
+</script>
+{% endblock %}

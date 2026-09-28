@@ -1,0 +1,1 @@
+{% extends "base.html" %}{% block title %}File too large | {{ brand_name }}{% endblock %}{% block content %}<section class="confirmation-page"><p class="eyebrow">Upload limit</p><h1>That file is too large.</h1><p>Please choose an image under the configured upload limit.</p><a class="button" href="{{ url_for('main.home') }}">Back home</a></section>{% endblock %}

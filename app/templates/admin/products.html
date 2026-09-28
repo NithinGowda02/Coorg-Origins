@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Products | {{ brand_name }}{% endblock %}
+
+{% block content %}
+<div class="admin-shell">
+    <aside class="admin-sidebar" aria-label="Admin navigation">
+        <a class="admin-brand" href="{{ url_for('admin.dashboard') }}">{{ brand_name }}</a>
+        <p class="admin-label">Workspace</p>
+        <a class="admin-link" href="{{ url_for('admin.dashboard') }}">Overview</a>
+        <a class="admin-link admin-link-active" href="{{ url_for('admin.products') }}">Products</a>
+        <a class="admin-link" href="{{ url_for('admin.orders') }}">Orders</a>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="admin-logout">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit">Sign out</button>
+        </form>
+    </aside>
+
+    <section class="admin-content" aria-labelledby="products-title">
+        <div class="admin-heading">
+            <div>
+                <p class="eyebrow">Catalog</p>
+                <h1 id="products-title">Products</h1>
+            </div>
+            <a class="button admin-action" href="{{ url_for('admin.new_product') }}">Add product</a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}<p class="flash flash-{{ category }}">{{ message }}</p>{% endfor %}
+        {% endwith %}
+
+        {% if products %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead><tr><th>Product</th><th>Category</th><th>Variants</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td><strong>{{ product.name }}</strong><small>{{ product.slug }}</small></td>
+                        <td>{{ product.category.name }}</td>
+                        <td>{{ product.variants|selectattr('is_active')|list|length }} active</td>
+                        <td><span class="status-pill status-{{ 'active' if product.is_active else 'inactive' }}">{{ "Featured" if product.is_featured else ("Active" if product.is_active else "Inactive") }}</span></td>
+                        <td class="table-actions">
+                            <a href="{{ url_for('admin.edit_product', product_id=product.id) }}">Edit</a>
+                            <form method="post" action="{{ url_for('admin.delete_product', product_id=product.id) }}" onsubmit="return confirm('Delete this product? Any previous order history will be preserved.');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="admin-delete-action" type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="admin-empty"><h2>No products yet.</h2><p>Add your first Coorg product and its sale variants.</p></div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

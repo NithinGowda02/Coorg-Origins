@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Our Story | {{ brand_name }}{% endblock %}
+
+{% block content %}
+<section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy-block"><p class="eyebrow">Kodagu, Karnataka · The Western Ghats</p><h1 id="hero-title">From the hills of Coorg to your home.</h1><p class="hero-copy">Authentic coffee, spices, and natural treasures inspired by the heart of Kodagu. Discover a thoughtfully chosen pantry shaped by the richness of the Western Ghats.</p><a class="button" href="{{ url_for('main.shop') }}">Explore the pantry</a><div class="hero-notes"><span>Rooted in Kodagu</span><span>Forest-grown character</span><span>Made to share</span></div></div>
+    <div class="hero-art" aria-label="Coorg coffee, with a misty forest atmosphere"><div class="hero-canopy hero-canopy-back" aria-hidden="true"></div><div class="hero-canopy hero-canopy-front" aria-hidden="true"></div><div class="hero-mist" aria-hidden="true"></div><div class="hero-sunlight" aria-hidden="true"></div>{% if featured_product and featured_product.images %}<img src="{{ featured_product.images[0].image_url }}" alt="{{ featured_product.images[0].alt_text }}">{% else %}<img src="{{ url_for('static', filename='uploads/products/b2745f4ec8c544a6a68f44bd89c25312.jpg') }}" alt="Freshly ground Coorg coffee with roasted beans">{% endif %}<span class="hero-art-label">From the hills of Kodagu<br>to your home.</span><span class="hero-art-stamp">COORG · KODAGU</span></div>
+</section>
+
+<section class="story" id="story" aria-labelledby="story-title">
+    <div class="story-photo"><img src="{{ url_for('static', filename='uploads/products/b2745f4ec8c544a6a68f44bd89c25312.jpg') }}" alt="Roasted coffee beans and ground coffee, a taste of the Coorg pantry" loading="lazy"><span class="story-photo-caption">A slower rhythm. A richer cup.</span></div>
+    <div class="story-copy"><p class="eyebrow">Our story · Kodagu, Karnataka</p><h2 id="story-title">Born in the hills of Coorg.</h2><p class="story-intro">Coorg is a land of green slopes, cool rain, and a long relationship with coffee and spice. Coorg Origins brings that sense of place to a considered collection for your home.</p>
+        <div class="story-columns"><div><span class="story-number">01 / PLACE</span><h3>Shaped by the hills</h3><p>Set in the Western Ghats, Kodagu’s landscape and agricultural heritage give the region its distinctive character.</p></div><div><span class="story-number">02 / PANTRY</span><h3>Flavours of the region</h3><p>Explore coffee, spices, and masala powders, with product details, size options, and availability shown clearly.</p></div><div><span class="story-number">03 / PURPOSE</span><h3>Chosen with care</h3><p>We are building a welcoming way to discover Coorg’s pantry and bring its familiar flavours into everyday life.</p></div></div>
+        <a class="story-shop-link" href="{{ url_for('main.shop') }}">Browse the Coorg Origins collection <span>↗</span></a>
+    </div>
+</section>
+
+<section class="category-section" aria-labelledby="category-title">
+    <p class="eyebrow">Browse by origin</p><h2 id="category-title">Find your next staple.</h2>{% if categories %}<div class="category-grid">{% for category in categories %}<a class="category-tile" href="{{ url_for('main.category_page', slug=category.slug) }}"><span>{{ "%02d"|format(loop.index) }}</span><strong>{{ category.name }}</strong><small>Explore collection</small></a>{% endfor %}</div>{% else %}<p class="empty-copy">Categories will appear as the catalog grows.</p>{% endif %}
+</section>
+
+<section class="origin-values" aria-label="What guides Coorg Origins"><div><span>01</span><h3>Place comes first</h3><p>Inspired by the landscape, ingredients, and food culture of Kodagu.</p></div><div><span>02</span><h3>Know what you choose</h3><p>Product pages make sizes, prices, and availability easy to find.</p></div><div><span>03</span><h3>Enjoy and share</h3><p>Bring the flavours of the Coorg pantry into everyday cooking and coffee breaks.</p></div></section>
+
+<section class="coming-soon" aria-labelledby="story-note-title"><p class="eyebrow">A little more Coorg</p><h2 id="story-note-title">Bring the hills to your table.</h2><p>Browse the collection, find a new favourite, and make room in your kitchen for the flavours of Kodagu.</p><a class="button" href="{{ url_for('main.shop') }}">Shop the collection</a></section>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Create admin account | {{ brand_name }}{% endblock %}
+
+{% block content %}
+<section class="auth-page" aria-labelledby="signup-title">
+    <div class="auth-brand-panel"><a class="auth-mark" href="{{ url_for('main.home') }}">{{ brand_name }}</a><div class="auth-brand-copy"><p class="eyebrow">First-run setup</p><h1>Start with<br><em>good care.</em></h1><p>Create the first private administrator account for your Coorg workspace.</p></div><div class="auth-orbit auth-orbit-one"></div><div class="auth-orbit auth-orbit-two"></div><span class="auth-location">KODAGU · KARNATAKA</span></div>
+    <div class="auth-form-panel"><div class="auth-form-inner"><div class="auth-form-heading"><p class="eyebrow">Create account</p><h2 id="signup-title">Set up your access.</h2><p>This one-time setup creates the first administrator.</p></div>{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<p class="flash flash-{{ category }}" role="alert">{{ message }}</p>{% endfor %}{% endwith %}<form class="auth-form" method="post" novalidate>{{ form.hidden_tag() }}{% for field in [form.name, form.email, form.password, form.confirm_password] %}<div class="auth-field {% if field.errors %}auth-field-error{% endif %}">{{ field.label }}{{ field(autocomplete="new-password" if field.type == "PasswordField" else none, placeholder=field.label.text) }}{% for error in field.errors %}<small>{{ error }}</small>{% endfor %}</div>{% endfor %}{{ form.submit(class="button auth-submit") }}</form><a class="auth-back-link" href="{{ url_for('auth.login') }}">← Back to sign in</a></div></div>
+</section>
+{% endblock %}

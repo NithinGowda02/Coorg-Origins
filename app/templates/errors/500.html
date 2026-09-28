@@ -1,0 +1,1 @@
+{% extends "base.html" %}{% block title %}Something went wrong | {{ brand_name }}{% endblock %}{% block content %}<section class="confirmation-page"><p class="eyebrow">Temporary error</p><h1>We could not complete that request.</h1><p>Please try again shortly.</p><a class="button" href="{{ url_for('main.home') }}">Back home</a></section>{% endblock %}

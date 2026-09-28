@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout | {{ brand_name }}{% endblock %}
+
+{% block content %}
+<section class="checkout-page" aria-labelledby="checkout-title"><div><p class="eyebrow">Almost there</p><h1 id="checkout-title">Delivery details.</h1><form class="checkout-form" method="post">{{ form.hidden_tag() }}{% for field in [form.customer_name, form.email, form.phone, form.address_line, form.city, form.state, form.postal_code] %}<div class="form-field">{{ field.label }}{{ field() }}{% for error in field.errors %}<small>{{ error }}</small>{% endfor %}</div>{% endfor %}{{ form.submit(class="button") }}</form></div><aside class="cart-summary"><p class="eyebrow">Order summary</p>{% for item in cart.items %}<div><span>{{ item.variant.product.name }} · {{ item.variant.label }} × {{ item.quantity }}</span><strong>Rs. {{ item.variant.price * item.quantity }}</strong></div>{% endfor %}<div class="summary-total"><span>Total</span><strong>Rs. {{ totals.total }}</strong></div></aside></section>
+{% endblock %}

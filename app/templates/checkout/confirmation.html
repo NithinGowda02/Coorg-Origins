@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block title %}Order {{ order.order_number }} | {{ brand_name }}{% endblock %}
+
+{% block content %}
+<section class="confirmation-page" aria-labelledby="confirmation-title"><p class="eyebrow">Order received</p><h1 id="confirmation-title">Thank you, {{ order.customer_name }}.</h1><p class="confirmation-number">{{ order.order_number }}</p><p>Your order is awaiting payment verification. We will confirm it after reviewing the submitted UPI reference.</p><div class="confirmation-summary"><div><span>Total</span><strong>Rs. {{ order.total_amount }}</strong></div><div><span>Payment status</span><strong>Verification pending</strong></div><div><span>Order status</span><strong>{{ order.order_status|title }}</strong></div></div><a class="button" href="{{ url_for('main.shop') }}">Continue shopping</a></section>
+{% endblock %}

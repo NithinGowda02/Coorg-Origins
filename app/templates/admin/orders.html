@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Orders | {{ brand_name }}{% endblock %}
+
+{% block content %}
+<div class="admin-shell">
+    <aside class="admin-sidebar" aria-label="Admin navigation"><a class="admin-brand" href="{{ url_for('admin.dashboard') }}">{{ brand_name }}</a><p class="admin-label">Workspace</p><a class="admin-link" href="{{ url_for('admin.dashboard') }}">Overview</a><a class="admin-link" href="{{ url_for('admin.products') }}">Products</a><a class="admin-link admin-link-active" href="{{ url_for('admin.orders') }}">Orders</a><form method="post" action="{{ url_for('auth.logout') }}" class="admin-logout"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit">Sign out</button></form></aside>
+    <section class="admin-content" aria-labelledby="orders-title">
+        <div class="admin-heading"><div><p class="eyebrow">Operations</p><h1 id="orders-title">Orders</h1></div><span class="admin-status">{{ orders|length }} recent</span></div>
+        {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<p class="flash flash-{{ category }}">{{ message }}</p>{% endfor %}{% endwith %}
+        {% if orders %}
+        <div class="admin-table-wrap"><table class="admin-table">
+            <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>{% for order in orders %}<tr>
+                <td><strong>{{ order.order_number }}</strong><small>{{ order.created_at.strftime('%d %b %Y') }}</small></td>
+                <td>{{ order.customer_name }}<small>{{ order.email }}</small></td>
+                <td>Rs. {{ order.total_amount }}</td>
+                <td><span class="status-pill status-{{ 'active' if order.payment_status == 'verified' else 'inactive' }}">{{ order.payment_status|replace('_', ' ')|title }}</span></td>
+                <td>{{ order.order_status|title }}</td>
+                <td class="table-actions"><a href="{{ url_for('admin.order_detail', order_id=order.id) }}">Review</a><form method="post" action="{{ url_for('admin.delete_order', order_id=order.id) }}" onsubmit="return confirm('Delete this order and its payment records? This cannot be undone.');"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="admin-delete-action" type="submit">Delete</button></form></td>
+            </tr>{% endfor %}</tbody>
+        </table></div>
+        {% else %}<div class="admin-empty"><h2>No orders yet.</h2><p>New customer orders will appear here.</p></div>{% endif %}
+    </section>
+</div>
+{% endblock %}

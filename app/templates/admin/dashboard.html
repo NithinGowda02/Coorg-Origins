@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Admin dashboard | {{ brand_name }}{% endblock %}
+
+{% block content %}
+<div class="admin-shell admin-dashboard-shell">
+    <aside class="admin-sidebar" aria-label="Admin navigation">
+        <a class="admin-brand" href="{{ url_for('admin.dashboard') }}">{{ brand_name }}</a>
+        <p class="admin-label">Workspace</p>
+        <a class="admin-link admin-link-active" href="{{ url_for('admin.dashboard') }}">Overview</a>
+        <a class="admin-link" href="{{ url_for('admin.products') }}">Products</a>
+        <a class="admin-link" href="{{ url_for('admin.orders') }}">Orders</a>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="admin-logout">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit">Sign out</button>
+        </form>
+    </aside>
+
+    <section class="admin-content" aria-labelledby="dashboard-title">
+        <div class="admin-heading admin-dashboard-heading">
+            <div>
+                <div class="admin-kicker"><span class="live-dot"></span> Store command center</div>
+                <h1 id="dashboard-title">Good morning, {{ current_user.name }}.</h1>
+                <p class="admin-subtitle">A clear view of what is moving through {{ brand_name }} today.</p>
+            </div>
+            <div class="admin-date"><span>STATUS</span><strong>All systems ready</strong><small>Catalog is live</small></div>
+        </div>
+
+        <div class="metric-grid" aria-label="Store summary">
+            <article class="metric-card metric-card-products">
+                <span class="metric-label">Products</span>
+                <strong>{{ metrics.products }}</strong>
+                <span class="metric-detail">Catalog items</span>
+            </article>
+            <article class="metric-card">
+                <span class="metric-label">Orders</span>
+                <strong>{{ metrics.orders }}</strong>
+                <span class="metric-detail">All customer orders</span>
+            </article>
+            <article class="metric-card metric-card-warm">
+                <span class="metric-label">Low stock</span>
+                <strong>{{ metrics.low_stock }}</strong>
+                <span class="metric-detail">Variants at 5 or fewer</span>
+            </article>
+            <article class="metric-card metric-card-alert">
+                <span class="metric-label">Payment review</span>
+                <strong>{{ metrics.pending_payments }}</strong>
+                <span class="metric-detail">Awaiting verification</span>
+            </article>
+        </div>
+
+        <div class="admin-lower-grid">
+            <div class="admin-notice">
+                <p class="eyebrow">Workspace pulse</p>
+                <h2>Your catalog has a point of view.</h2>
+                <p>Keep the shelves considered, the stock visible, and every order moving with care.</p>
+                <div class="pulse-line"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            </div>
+            <div class="admin-quick-actions">
+                <p class="eyebrow">Quick actions</p>
+                <a href="{{ url_for('admin.new_product') }}"><span>+</span><strong>Add a product</strong><small>Expand the pantry</small></a>
+                <a href="{{ url_for('admin.orders') }}"><span>→</span><strong>Review orders</strong><small>Keep fulfilment moving</small></a>
+                <a href="{{ url_for('admin.payment_qr_settings') }}"><span>QR</span><strong>Payment QR</strong><small>Set customer payment image</small></a>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
